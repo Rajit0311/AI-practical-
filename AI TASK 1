@@ -1,0 +1,273 @@
+Problem Statement :
+Develop Python programs to determine the route from College to Home using the following search algorithms:
+•	Breadth-First Search (BFS)
+•	Depth-First Search (DFS)
+•	Uniform Cost Search (UCS)
+•	Greedy Best-First Search
+•	A* Search
+For each algorithm, display:
+•	Path from College to Home
+•	Total Path Cost
+•	Number of Nodes Explored
+Compare the A* Search result with the route suggested by Google Maps.
+1.	Initialize a queue with the start node and its path.
+2.	Create an empty visited set.
+3.	Set explored nodes count to 0.
+4.	While the queue is not empty:
+•	Remove the first element from the queue.
+•	If the node is not visited:
+•	Mark it as visited.
+•	Increment explored count.
+•	If the node is the goal, return the path, path cost, and explored count.
+•	Otherwise, add all neighboring nodes to the queue with their updated paths.
+5.	If the goal is not found, terminate.
+________________________________________
+2. Depth First Search (DFS)
+Algorithm:
+1.	Initialize a stack with the start node and its path.
+2.	Create an empty visited set.
+3.	Set explored nodes count to 0.
+4.	While the stack is not empty:
+•	Pop the top element from the stack.
+•	If the node is not visited:
+•	Mark it as visited.
+•	Increment explored count.
+•	If the node is the goal, return the path, path cost, and explored count.
+•	Otherwise, push all neighboring nodes (in reverse order) onto the stack with updated paths.
+5.	If the goal is not found, terminate.
+________________________________________
+3. Uniform Cost Search (UCS)
+Algorithm:
+1.	Initialize a priority queue with the start node, cost = 0, and its path.
+2.	Create an empty visited set.
+3.	Set explored nodes count to 0.
+4.	While the priority queue is not empty:
+•	Remove the node with the lowest cumulative cost.
+•	If the node is not visited:
+•	Mark it as visited.
+•	Increment explored count.
+•	If the node is the goal, return the path, total cost, and explored count.
+•	Otherwise, for each neighboring node:
+•	Calculate the new cumulative cost.
+•	Insert the neighbor into the priority queue with the updated cost and path.
+5.	If the goal is not found, terminate.
+________________________________________
+4. Greedy Best-First Search
+Algorithm:
+1.	Initialize a priority queue with the start node using its heuristic value.
+2.	Create an empty visited set.
+3.	Set explored nodes count to 0.
+4.	While the priority queue is not empty:
+•	Remove the node with the smallest heuristic value.
+•	If the node is not visited:
+•	Mark it as visited.
+•	Increment explored count.
+•	If the node is the goal, return the path, path cost, and explored count.
+•	Otherwise, insert all neighboring nodes into the priority queue using only their heuristic values.
+5.	If the goal is not found, terminate.
+________________________________________
+5. A* Search
+Algorithm:
+1.	Initialize a priority queue with the start node:
+•	g=0 (actual cost),
+•	f=g+h (estimated total cost),
+•	and its path.
+2.	Create an empty visited set.
+3.	Set explored nodes count to 0.
+4.	While the priority queue is not empty:
+•	Remove the node with the smallest f-value.
+•	If the node is not visited:
+•	Mark it as visited.
+•	Increment explored count.
+•	If the node is the goal, return the path, actual cost g, and explored count.
+•	Otherwise, for each neighboring node:
+•	Compute the new actual cost:
+gnew=g+edge cost
+•	Compute the estimated total cost:
+fnew=gnew+h(neighbor)
+•	Insert the neighbor into the priority queue with (fnew,gnew) and the updated path.
+5.	If the goal is not found, terminate.
+These algorithms directly correspond to the logic implemented in your Python code, including the use of a queue for BFS, stack for DFS, priority queue with cumulative cost for UCS, priority queue with heuristic for Greedy Best-First Search, and priority queue with f=g+h for A* Search.
+
+Code :
+from collections import deque
+import heapq
+
+# Graph with distances (km)
+
+graph = {
+    "College": [("Metro Station", 0.5), ("N D Savla", 0.9)],
+
+    "Metro Station": [("Gundavali", 0.6)],
+
+    "Gundavali": [("Andheri East", 0.7)],
+
+    "Andheri East": [("MIDC Central Road", 0.8)],
+
+    "N D Savla": [("Paper Box Junction", 0.7)],
+
+    "Paper Box Junction": [("MIDC Central Road", 0.9)],
+
+    "MIDC Central Road": [("Home", 0.7)],
+
+    "Home": []
+}
+
+# Heuristic values
+
+heuristic = {
+    "College": 3.3,
+    "Metro Station": 2.8,
+    "Gundavali": 2.2,
+    "Andheri East": 1.5,
+    "MIDC Central Road": 0.7,
+    "N D Savla": 2.5,
+    "Paper Box Junction": 1.6,
+    "Home": 0
+}
+
+# Calculate path cost
+
+def get_cost(path):
+    cost = 0
+    for i in range(len(path)-1):
+        for n, c in graph[path[i]]:
+            if n == path[i+1]:
+                cost += c
+    return cost
+
+
+# BFS
+
+def bfs(start, goal):
+    q = deque([(start, [start])])
+    visited = set()
+    explored = 0
+
+    while q:
+        node, path = q.popleft()
+
+        if node not in visited:
+            visited.add(node)
+            explored += 1
+
+            if node == goal:
+                return path, get_cost(path), explored
+
+            for nxt, _ in graph[node]:
+                q.append((nxt, path+[nxt]))
+
+
+# DFS
+
+def dfs(start, goal):
+    stack = [(start,[start])]
+    visited = set()
+    explored = 0
+
+    while stack:
+        node,path = stack.pop()
+
+        if node not in visited:
+            visited.add(node)
+            explored += 1
+
+            if node == goal:
+                return path,get_cost(path),explored
+
+            for nxt,_ in reversed(graph[node]):
+                stack.append((nxt,path+[nxt]))
+
+
+# UCS
+
+def ucs(start,goal):
+
+    pq=[(0,start,[start])]
+    visited=set()
+    explored=0
+
+    while pq:
+
+        cost,node,path=heapq.heappop(pq)
+
+        if node not in visited:
+
+            visited.add(node)
+            explored+=1
+
+            if node==goal:
+                return path,cost,explored
+
+            for nxt,c in graph[node]:
+                heapq.heappush(pq,(cost+c,nxt,path+[nxt]))
+
+
+# Greedy Best First Search
+
+def greedy(start,goal):
+
+    pq=[(heuristic[start],start,[start])]
+    visited=set()
+    explored=0
+
+    while pq:
+
+        h,node,path=heapq.heappop(pq)
+
+        if node not in visited:
+
+            visited.add(node)
+            explored+=1
+
+            if node==goal:
+                return path,get_cost(path),explored
+
+            for nxt,_ in graph[node]:
+                heapq.heappush(pq,(heuristic[nxt],nxt,path+[nxt]))
+
+
+# A*
+
+def astar(start,goal):
+
+    pq=[(heuristic[start],0,start,[start])]
+    visited=set()
+    explored=0
+
+    while pq:
+
+        f,g,node,path=heapq.heappop(pq)
+
+        if node not in visited:
+
+            visited.add(node)
+            explored+=1
+
+            if node==goal:
+                return path,g,explored
+
+            for nxt,c in graph[node]:
+                newg=g+c
+                newf=newg+heuristic[nxt]
+
+                heapq.heappush(pq,(newf,newg,nxt,path+[nxt]))
+
+
+algorithms = [
+    ("Breadth First Search", bfs),
+    ("Depth First Search", dfs),
+    ("Uniform Cost Search", ucs),
+    ("Greedy Best First Search", greedy),
+    ("A* Search", astar)
+]
+
+for name, algo in algorithms:
+
+    path, cost, explored = algo("College", "Home")
+
+    print("\n", "="*50)
+    print(name)
+    print("Path :", " -> ".join(path))
+    print("Distance :", cost, "km")
+    print("Nodes Explored :", explored)
